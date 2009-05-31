@@ -53,3 +53,14 @@ class URLChecker(object):
             return True
         except urllib2.URLError:
             return False
+
+def status_by_color(status):
+    if status == 'SUCCESSFUL':
+        color = 'GREEN'
+    elif status == 'FAILED':
+        color = 'BG_RED'
+    else:
+        color = 'CYAN'
+    
+    return color
+

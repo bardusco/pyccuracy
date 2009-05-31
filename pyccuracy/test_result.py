@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from common import force_unicode
+from common import force_unicode, status_by_color
+from terminal_colored import *
 
 class TestResult(object):
     def __init__(self, language, stories, invalid_test_files, no_story_definition, start_time, end_time):
@@ -29,6 +30,8 @@ class TestResult(object):
         self.failed_scenarios = 0
         self.status = "SUCCESSFUL"
         self.__parse_results()
+
+        self.term = TerminalController()
 
     def __parse_results(self):
         self.invalid_files = len(self.invalid_test_files) + len(self.no_story_definition)
@@ -53,11 +56,11 @@ class TestResult(object):
         messages.append("=" * 80)
         messages.append(self.language["test_run_summary"])
         messages.append("=" * 80)
-        messages.append(self.language["stories_ran_successfully"] % (self.successful_stories, percentage_successful_stories * 100))
-        messages.append(self.language["stories_that_failed"] % (self.failed_stories, percentage_failed_stories * 100))
-        messages.append(self.language["scenarios_ran_successfully"] % (self.successful_scenarios, percentage_successful_scenarios * 100))
-        messages.append(self.language["scenarios_that_failed"] % (self.failed_scenarios, percentage_failed_scenarios * 100))
-        messages.append("")
+        messages.append("${GREEN}"+self.language["stories_ran_successfully"] % (self.successful_stories, percentage_successful_stories * 100))
+        messages.append("${RED}"+self.language["stories_that_failed"] % (self.failed_stories, percentage_failed_stories * 100))
+        messages.append("${GREEN}"+self.language["scenarios_ran_successfully"] % (self.successful_scenarios, percentage_successful_scenarios * 100))
+        messages.append("${RED}"+self.language["scenarios_that_failed"] % (self.failed_scenarios, percentage_failed_scenarios * 100))
+        messages.append("${NORMAL}")
         messages.append(self.language["test_run_status"] % (self.failed_stories > 0 and "FAILED" or "SUCCESSFUL"))
         period = (self.end_time - self.start_time)
         if period == 0:
@@ -90,11 +93,12 @@ class TestResult(object):
                     self.render_actions(messages, scenario.thens)
                     messages.append("-" * 80)
 
-        return u"\n".join(messages)
+        return self.term.render(u"\n".join(messages))
 
     def render_actions(self, messages, action_collection):
         for action in action_collection:
-            messages.append(u"	%s - %s" % (force_unicode(action.description), force_unicode(action.status)))
+            self.color = status_by_color(action.status)
+            messages.append(u"  ${%s}%s - %s${NORMAL}" % (self.color, force_unicode(action.description), force_unicode(action.status)))
             if (action.status == "FAILED"):
                 if (action.error):
                     messages[-1] += (u" - %s" % action.error)

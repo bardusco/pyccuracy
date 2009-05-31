@@ -15,7 +15,7 @@
 import urllib2
 
 from test_fixture import *
-from common import force_unicode
+from common import force_unicode, status_by_color
 from terminal_colored import *
 
 class StoryRunner(object):
@@ -98,62 +98,54 @@ class StoryRunner(object):
 
     def __msg_pre_story(self, context, story):
         messages = []
-        messages.append("=" * 80)
-        messages.append("%s" % context.language["story"])
-        messages.append("\n   %s %s\n   %s %s\n   %s %s\n" % (context.language["as_a"], force_unicode(story.as_a),
+        messages.append(u"=" * 80)
+        messages.append(u"%s" % context.language["story"])
+        messages.append(u"\n   %s %s\n   %s %s\n   %s %s\n" % (context.language["as_a"], force_unicode(story.as_a),
                                                        context.language["i_want_to"], force_unicode(story.i_want_to),
                                                        context.language["so_that"], force_unicode(story.so_that)))
         print self.term.render(u"\n".join(messages))
 
     def __msg_post_story(self, context, story):
         messages = []
-        messages.append("-" * 80)
+        messages.append(u"-" * 80)
 
-        self.status_by_color(story.status)
+        self.color = status_by_color(story.status)
 
-        messages.append("${%s}%s: %s${NORMAL}" % (self.color, context.language["story_status"], story.status))
-        messages.append("-" * 80)
-        messages.append("")
+        messages.append(u"${%s}%s: %s${NORMAL}" % (self.color, context.language["story_status"], force_unicode(story.status)))
+        messages.append(u"-" * 80)
+        messages.append(u"")
         
         print self.term.render(u"\n".join(messages))
 
     def __msg_pre_scenario(self, context, scenario):
         messages = []
-        messages.append("-" * 80)
+        messages.append(u"-" * 80)
         messages.append(u"%s %s - %s" % (context.language["scenario"], force_unicode(scenario.index), force_unicode(scenario.title)))
-        messages.append("-" * 80)
-        messages.append("")
+        messages.append(u"-" * 80)
+        messages.append(u"")
 
         print self.term.render(u"\n".join(messages))
 
     def __msg_post_scenario(self, context, scenario):
         messages = []
 
-        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["given"])
+        messages.append(u"   ${YELLOW}%s: ${NORMAL}" % context.language["given"])
         self.render_actions(messages, scenario.givens)
 
-        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["when"])
+        messages.append(u"   ${YELLOW}%s: ${NORMAL}" % context.language["when"])
         self.render_actions(messages, scenario.whens)
 
-        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["then"])
+        messages.append(u"   ${YELLOW}%s: ${NORMAL}" % context.language["then"])
         self.render_actions(messages, scenario.thens)
 
-        self.status_by_color(scenario.status)
+        self.color = status_by_color(scenario.status)
 
-        messages.append("\n   ${%s}%s: %s${NORMAL}\n" % (self.color, context.language["scenario_status"], scenario.status))
+        messages.append(u"\n   ${%s}%s: %s${NORMAL}\n" % (self.color, context.language["scenario_status"], scenario.status))
 
         print self.term.render(u"\n".join(messages))
 
     def render_actions(self, messages, action_collection):
         for action in action_collection:
-            self.status_by_color(action.status)
-            messages.append("      ${%s}%s - %s${NORMAL}" % (self.color, action.description, action.status))
+            self.color = status_by_color(action.status)
+            messages.append(u"      ${%s}%s - %s${NORMAL}" % (self.color, force_unicode(action.description), force_unicode(action.status)))
     
-    def status_by_color(self, status):
-        if status == 'SUCCESSFUL':
-            self.color = 'GREEN'
-        elif status == 'FAILED':
-            self.color = 'BG_RED'
-        else:
-            self.color = 'CYAN'
-
