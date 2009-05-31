@@ -15,6 +15,7 @@
 import urllib2
 
 from test_fixture import *
+from common import force_unicode
 
 class StoryRunner(object):
     def __init__(self, browser_driver):
@@ -70,21 +71,73 @@ class StoryRunner(object):
             self.raise_post_scenario(context, current_story, current_scenario, current_scenario.status)
 
     def raise_pre_story(self, context, story):
+        self.__msg_pre_story(context, story)
         conditions = story.conditions_module
         if conditions and hasattr(conditions, "pre_story"):
             conditions.pre_story(context, story)
 
     def raise_post_story(self, context, story, result):
+        self.__msg_post_story(context, story)
         conditions = story.conditions_module
         if conditions and hasattr(conditions, "post_story"):
             conditions.post_story(context, story, result)
 
     def raise_pre_scenario(self, context, story, scenario):
+        self.__msg_pre_scenario(context, scenario)
         conditions = story.conditions_module
         if conditions and hasattr(conditions, "pre_scenario"):
             conditions.pre_scenario(context, story, scenario)
 
     def raise_post_scenario(self, context, story, scenario, result):
+        self.__msg_post_scenario(context, scenario)
         conditions = story.conditions_module
         if conditions and hasattr(conditions, "post_scenario"):
             conditions.post_scenario(context, story, scenario, result)
+
+    def __msg_pre_story(self, context, story):
+        messages = []
+        messages.append("=" * 80)
+        messages.append("%s" % context.language["story"])
+        messages.append("\n   %s %s\n   %s %s\n   %s %s\n" % (context.language["as_a"], force_unicode(story.as_a),
+                                                       context.language["i_want_to"], force_unicode(story.i_want_to),
+                                                       context.language["so_that"], force_unicode(story.so_that)))
+        print u"\n".join(messages)
+
+    def __msg_post_story(self, context, story):
+        messages = []
+        messages.append("-" * 80)
+        messages.append("%s: %s" % (context.language["story_status"], story.status))
+        messages.append("-" * 80)
+        messages.append("")
+        
+        print u"\n".join(messages)
+
+    def __msg_pre_scenario(self, context, scenario):
+        messages = []
+        messages.append("-" * 80)
+        messages.append(u"%s %s - %s" % (context.language["scenario"], force_unicode(scenario.index), force_unicode(scenario.title)))
+        messages.append("-" * 80)
+        messages.append("")
+
+        print u"\n".join(messages)
+
+    def __msg_post_scenario(self, context, scenario):
+        messages = []
+
+        messages.append("   %s: " % context.language["given"])
+        for given in scenario.givens:
+            messages.append("      %s - %s" % (given.description, given.status))
+
+        messages.append("   %s: " % context.language["when"])
+        for when in scenario.whens:
+            messages.append("      %s - %s" % (when.description, when.status))
+
+        messages.append("   %s: " % context.language["then"])
+        for then in scenario.thens:
+            messages.append("      %s - %s" % (then.description, then.status))
+
+        messages.append("")
+        messages.append("%s: %s" % (context.language["scenario_status"], scenario.status))
+        messages.append("")
+
+        print u"\n".join(messages)

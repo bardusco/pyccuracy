@@ -10,6 +10,8 @@ then = Então
 invalid_test_files = arquivos de teste inválidos
 files_without_header = arquivos de teste sem o cabeçalho correto
 story_status = Status da Story
+scenario_status = Status do Cenário
+story = Story
 
 #Sumario dos Testes
 test_run_summary = Sumário dos Testes

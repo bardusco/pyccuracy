@@ -10,6 +10,8 @@ then = Then
 invalid_test_files = invalid test files
 files_without_header = test files without the proper header
 story_status = Story Status
+scenario_status = Scenario Status
+story = Story
 
 #Supported elements
 supported_elements = button|radio button|div|link|checkbox|select|textbox|image|element|paragraph|ul|li
