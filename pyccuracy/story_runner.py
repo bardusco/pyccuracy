@@ -108,13 +108,10 @@ class StoryRunner(object):
     def __msg_post_story(self, context, story):
         messages = []
         messages.append("-" * 80)
-        if story.status == 'SUCCESSFUL':
-            color = 'GREEN'
-        elif story.status == 'FAILED':
-            color = 'BG_RED'
-        else:
-            color = 'CYAN'
-        messages.append("${%s}%s: %s${NORMAL}" % (color, context.language["story_status"], story.status))
+
+        self.status_by_color(story.status)
+
+        messages.append("${%s}%s: %s${NORMAL}" % (self.color, context.language["story_status"], story.status))
         messages.append("-" * 80)
         messages.append("")
         
@@ -133,43 +130,30 @@ class StoryRunner(object):
         messages = []
 
         messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["given"])
-        for given in scenario.givens:
-            if given.status == 'SUCCESSFUL':
-                color = 'GREEN'
-            elif given.status == 'FAILED':
-                color = 'BG_RED'
-            else:
-                color = 'CYAN'
-            messages.append("      ${%s}%s - %s${NORMAL}" % (color, given.description, given.status))
+        self.render_actions(messages, scenario.givens)
 
         messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["when"])
-        for when in scenario.whens:
-            if when.status == 'SUCCESSFUL':
-                color = 'GREEN'
-            elif when.status == 'FAILED':
-                color = 'BG_RED'
-            else:
-                color = 'CYAN'
-            messages.append("      ${%s}%s - %s${NORMAL}" % (color, when.description, when.status))
+        self.render_actions(messages, scenario.whens)
 
-        messages.append("${YELLOW}   %s: ${NORMAL}" % context.language["then"])
-        for then in scenario.thens:
-            if then.status == 'SUCCESSFUL':
-                color = 'GREEN'
-            elif then.status == 'FAILED':
-                color = 'BG_RED'
-            else:
-                color = 'CYAN'
-            messages.append("      ${%s}%s - %s${NORMAL}" % (color, then.description, then.status))
+        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["then"])
+        self.render_actions(messages, scenario.thens)
 
-        if scenario.status == 'SUCCESSFUL':
-            color = 'GREEN'
-        elif scenario.status == 'FAILED':
-            color = 'BG_RED'
-        else:
-            color = 'CYAN'
-        messages.append("")
-        messages.append("   ${%s}%s: %s${NORMAL}" % (color, context.language["scenario_status"], scenario.status))
-        messages.append("")
+        self.status_by_color(scenario.status)
+
+        messages.append("\n   ${%s}%s: %s${NORMAL}\n" % (self.color, context.language["scenario_status"], scenario.status))
 
         print self.term.render(u"\n".join(messages))
+
+    def render_actions(self, messages, action_collection):
+        for action in action_collection:
+            self.status_by_color(action.status)
+            messages.append("      ${%s}%s - %s${NORMAL}" % (self.color, action.description, action.status))
+    
+    def status_by_color(self, status):
+        if status == 'SUCCESSFUL':
+            self.color = 'GREEN'
+        elif status == 'FAILED':
+            self.color = 'BG_RED'
+        else:
+            self.color = 'CYAN'
+
