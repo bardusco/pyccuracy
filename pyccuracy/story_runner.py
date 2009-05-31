@@ -16,10 +16,12 @@ import urllib2
 
 from test_fixture import *
 from common import force_unicode
+from terminal_colored import *
 
 class StoryRunner(object):
     def __init__(self, browser_driver):
         self.browser_driver = browser_driver
+        self.term = TerminalController()
 
     def run_stories(self, context):
         self.context = context
@@ -101,16 +103,22 @@ class StoryRunner(object):
         messages.append("\n   %s %s\n   %s %s\n   %s %s\n" % (context.language["as_a"], force_unicode(story.as_a),
                                                        context.language["i_want_to"], force_unicode(story.i_want_to),
                                                        context.language["so_that"], force_unicode(story.so_that)))
-        print u"\n".join(messages)
+        print self.term.render(u"\n".join(messages))
 
     def __msg_post_story(self, context, story):
         messages = []
         messages.append("-" * 80)
-        messages.append("%s: %s" % (context.language["story_status"], story.status))
+        if story.status == 'SUCCESSFUL':
+            color = 'GREEN'
+        elif story.status == 'FAILED':
+            color = 'BG_RED'
+        else:
+            color = 'CYAN'
+        messages.append("${%s}%s: %s${NORMAL}" % (color, context.language["story_status"], story.status))
         messages.append("-" * 80)
         messages.append("")
         
-        print u"\n".join(messages)
+        print self.term.render(u"\n".join(messages))
 
     def __msg_pre_scenario(self, context, scenario):
         messages = []
@@ -119,25 +127,49 @@ class StoryRunner(object):
         messages.append("-" * 80)
         messages.append("")
 
-        print u"\n".join(messages)
+        print self.term.render(u"\n".join(messages))
 
     def __msg_post_scenario(self, context, scenario):
         messages = []
 
-        messages.append("   %s: " % context.language["given"])
+        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["given"])
         for given in scenario.givens:
-            messages.append("      %s - %s" % (given.description, given.status))
+            if given.status == 'SUCCESSFUL':
+                color = 'GREEN'
+            elif given.status == 'FAILED':
+                color = 'BG_RED'
+            else:
+                color = 'CYAN'
+            messages.append("      ${%s}%s - %s${NORMAL}" % (color, given.description, given.status))
 
-        messages.append("   %s: " % context.language["when"])
+        messages.append("   ${YELLOW}%s: ${NORMAL}" % context.language["when"])
         for when in scenario.whens:
-            messages.append("      %s - %s" % (when.description, when.status))
+            if when.status == 'SUCCESSFUL':
+                color = 'GREEN'
+            elif when.status == 'FAILED':
+                color = 'BG_RED'
+            else:
+                color = 'CYAN'
+            messages.append("      ${%s}%s - %s${NORMAL}" % (color, when.description, when.status))
 
-        messages.append("   %s: " % context.language["then"])
+        messages.append("${YELLOW}   %s: ${NORMAL}" % context.language["then"])
         for then in scenario.thens:
-            messages.append("      %s - %s" % (then.description, then.status))
+            if then.status == 'SUCCESSFUL':
+                color = 'GREEN'
+            elif then.status == 'FAILED':
+                color = 'BG_RED'
+            else:
+                color = 'CYAN'
+            messages.append("      ${%s}%s - %s${NORMAL}" % (color, then.description, then.status))
 
+        if scenario.status == 'SUCCESSFUL':
+            color = 'GREEN'
+        elif scenario.status == 'FAILED':
+            color = 'BG_RED'
+        else:
+            color = 'CYAN'
         messages.append("")
-        messages.append("%s: %s" % (context.language["scenario_status"], scenario.status))
+        messages.append("   ${%s}%s: %s${NORMAL}" % (color, context.language["scenario_status"], scenario.status))
         messages.append("")
 
-        print u"\n".join(messages)
+        print self.term.render(u"\n".join(messages))
